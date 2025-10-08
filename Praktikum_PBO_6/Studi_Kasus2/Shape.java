@@ -1,0 +1,16 @@
+package Praktikum_PBO_6.Studi_Kasus2;
+
+public abstract class Shape {
+    protected String shapeName;
+
+    public Shape(String name) {
+        this.shapeName = name;
+    }
+
+    public abstract double area();
+
+    @Override
+    public String toString() {
+        return this.shapeName;
+    }
+}
