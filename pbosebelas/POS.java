@@ -1,9 +1,7 @@
-package Praktikum_PBO_11;
+package pbosebelas;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.event.ListSelectionEvent;       
-import javax.swing.event.ListSelectionListener; 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,14 +16,20 @@ import java.util.Locale;
  * * Versi ini memiliki fungsionalitas penuh.
  */
 public class POS implements ActionListener {
+    private static final String ERROR_TITLE = "Error";
     private JFrame frame;
     private JMenuBar menuBar;
-    private JMenu fileMenu, helpMenu;
-    private JTable productTable, cartTable;
+    private JMenu fileMenu;
+    private JMenu helpMenu;
+    private JTable productTable;
     private JTextArea strukArea;
-    private JLabel lblSelectedProduct, lblTotal, lblPoints;
+    private JLabel lblSelectedProduct;
+    private JLabel lblPoints;
+    private JLabel lblTotal;
     private JTextField txtQty;
-    private JButton btnAddToCart, btnCheckout, btnCetak;
+    private JButton btnAddToCart;
+    private JButton btnCheckout;
+    private JButton btnCetak;
     private DefaultTableModel cartModel;
     private NumberFormat currencyFormatter;
 
@@ -33,10 +37,10 @@ public class POS implements ActionListener {
      * Konstruktor untuk membangun GUI
      */
     public POS() {
-        currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("in", "ID"));
+        currencyFormatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("in-ID"));
 
         frame = new JFrame("POIN Off-Sales - Java Swing");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(750, 525);
         frame.setMinimumSize(new Dimension(600, 400));
         frame.setLocationRelativeTo(null);
@@ -87,12 +91,9 @@ public class POS implements ActionListener {
         productTable = new JTable(productModel);
         productTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        productTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    updateSelectedProduct();
-                }
+        productTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                updateSelectedProduct();
             }
         });
 
@@ -144,7 +145,7 @@ public class POS implements ActionListener {
                 return false;
             }
         };
-        cartTable = new JTable(cartModel);
+        JTable cartTable = new JTable(cartModel);
 
         JScrollPane cartScrollPane = new JScrollPane(cartTable);
         cartPanel.add(cartScrollPane, BorderLayout.CENTER);
@@ -232,7 +233,7 @@ public class POS implements ActionListener {
         int selectedRow = productTable.getSelectedRow();
 
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(frame, "Pilih produk dari tabel kiri terlebih dahulu.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Pilih produk dari tabel kiri terlebih dahulu.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -244,11 +245,11 @@ public class POS implements ActionListener {
         try {
             qty = Integer.parseInt(txtQty.getText());
             if (qty <= 0) {
-                JOptionPane.showMessageDialog(frame, "Kuantitas (Qty) harus lebih dari 0.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Kuantitas (Qty) harus lebih dari 0.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                 return;
             }
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(frame, "Kuantitas (Qty) harus berupa angka.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Kuantitas (Qty) harus berupa angka.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -275,14 +276,14 @@ public class POS implements ActionListener {
 
     private void performCheckout() {
         if (cartModel.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(frame, "Keranjang masih kosong.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Keranjang masih kosong.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         StringBuilder struk = new StringBuilder();
         struk.append("======== POIN OFF-SALES ========\n");
         struk.append("Toko: Demo Toko\n\n");
-        struk.append(String.format("%-5s %-18s %-3s %10s\n", "ID", "Nama", "Qty", "Subtotal"));
+        struk.append(String.format("%-5s %-18s %-3s %10s%n", "ID", "Nama", "Qty", "Subtotal"));
         struk.append("------------------------------------------------------\n");
 
         for (int i = 0; i < cartModel.getRowCount(); i++) {
@@ -291,7 +292,7 @@ public class POS implements ActionListener {
             int qty = (int) cartModel.getValueAt(i, 2);
             long subtotal = (long) cartModel.getValueAt(i, 4);
             
-            struk.append(String.format("%-5s %-18s %-3d %10s\n", 
+            struk.append(String.format("%-5s %-18s %-3d %10s%n", 
                             id, 
                             nama, 
                             qty, 
@@ -299,8 +300,8 @@ public class POS implements ActionListener {
         }
 
         struk.append("\n------------------------------------------------------\n");
-        struk.append(String.format("%-28s %10s\n", "TOTAL:", lblTotal.getText().replace("Total: ", "")));
-        struk.append(String.format("%-28s %10s\n", "POINTS DIDAPAT:", lblPoints.getText().replace("Points: ", "")));
+        struk.append(String.format("%-28s %10s%n", "TOTAL:", lblTotal.getText().replace("Total: ", "")));
+        struk.append(String.format("%-28s %10s%n", "POINTS DIDAPAT:", lblPoints.getText().replace("Points: ", "")));
         struk.append("\n" + lblPoints.getText() + " (1 point per Rp 1000)\n\n");
         struk.append("Terima kasih! Silakan kunjungi kembali.\n");
 
@@ -312,7 +313,7 @@ public class POS implements ActionListener {
 
     private void printStruk() {
         if (strukArea.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Lakukan Checkout terlebih dahulu untuk mencetak struk.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Lakukan Checkout terlebih dahulu untuk mencetak struk.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -334,10 +335,6 @@ public class POS implements ActionListener {
      */
     public static void main(String[] args) {
         // Menjalankan GUI di Event Dispatch Thread (EDT) untuk keamanan thread
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new POS();
-            }
-        });
+        javax.swing.SwingUtilities.invokeLater(POS::new);
     }
 }
